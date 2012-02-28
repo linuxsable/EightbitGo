@@ -1,0 +1,17 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    bloopsaphone (0.4)
+    kantan-sgf (0.0.2)
+    polyglot (0.3.3)
+    treetop (1.4.10)
+      polyglot
+      polyglot (>= 0.3.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bloopsaphone
+  kantan-sgf
+  treetop

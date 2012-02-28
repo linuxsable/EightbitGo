@@ -2,6 +2,8 @@ GEM
   remote: http://rubygems.org/
   specs:
     bloopsaphone (0.4)
+    feepogram (0.0.1)
+      bloopsaphone
     kantan-sgf (0.0.2)
     polyglot (0.3.3)
     treetop (1.4.10)
@@ -13,5 +15,6 @@ PLATFORMS
 
 DEPENDENCIES
   bloopsaphone
+  feepogram
   kantan-sgf
   treetop

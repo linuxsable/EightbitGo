@@ -8,25 +8,25 @@ class EightbitGo
   BOARD_SIZE_Y = 19
 
   X_NOTE_MAP = {
-    1 => 'C',
-    2 => 'D',
-    3 => 'E',
-    4 => 'F',
-    5 => 'G',
-    6 => 'A',
-    7 => 'B',
-    8 => 'C',
-    9 => 'D',
-    10 => 'E',
-    11 => 'F',
-    12 => 'G',
-    13 => 'A',
-    14 => 'B',
-    15 => 'C',
-    16 => 'D',
-    17 => 'E',
-    18 => 'F',
-    19 => 'G'
+    0 => 'C',
+    1 => 'D',
+    2 => 'E',
+    3 => 'F',
+    4 => 'G',
+    5 => 'A',
+    6 => 'B',
+    7 => 'C',
+    8 => 'D',
+    9 => 'E',
+    10 => 'F',
+    11 => 'G',
+    12 => 'A',
+    13 => 'B',
+    14 => 'C',
+    15 => 'D',
+    16 => 'E',
+    17 => 'F',
+    18 => 'G'
   }
 
   def initialize(filename)
@@ -34,8 +34,9 @@ class EightbitGo
     @song = nil
     
     parse_sgf
-    init_song
     puts get_game_header
+    create_player_melodies
+    init_song
     play_song
   end
 
@@ -48,37 +49,65 @@ class EightbitGo
     "Match: #{@sgf.player_black} vs. #{@sgf.player_white}."
   end
 
-  def init_song
-    bloops = Bloops.new
-    bloops.tempo = 200
+  def create_note_from_move(move)
+    if move.include? :pass
+      return nil
+    end
 
-    @song = Feepogram.new(bloops) do
-      sound :crunch, Bloops::NOISE do |s|
-        s.punch = 0.5
-      end
+    x = X_NOTE_MAP[move[:x]]
+    y = move[:y]
 
-      sound :oooo, Bloops::SINE do |s|
-        s.sustain = 2.0
-      end
+    if y > 5
+      y = 5
+    end
 
-      sound :plink, Bloops::SQUARE do |s|
-        s.punch = 1.0
-      end
+    "8:%s%s" % [x, y]
+  end
 
-      phrase do
-          
+  def create_player_melodies
+    @white_notes = []
+    @black_notes = []
+
+    @sgf.move_list.each do |move|
+      note = create_note_from_move(move)
+
+      if !note.nil?
+        if move[:color] == 'W'
+          @white_notes << note
+        else
+          @black_notes << note
+        end
       end
     end
   end
 
+  def init_song
+    @song = Bloops.new
+    @song.tempo = 230
+
+    black_instrument = @song.sound Bloops::SQUARE
+    black_instrument.sustain = 0.4
+    black_instrument.decay = 0.4
+
+    white_instrument = @song.sound Bloops::SINE
+    white_instrument.sustain = 2
+    white_instrument.decay = 0.4
+
+    p 'Black Moves:'
+    p @black_notes.join(' ')
+
+    p 'White Moves:'
+    p @white_notes.join(' ')
+
+    # @song.tune(black_instrument, @black_notes.join(' '))
+    @song.tune(white_instrument, @white_notes.join(' '))
+  end
+
   def play_song
+    sleep 1
     @song.play
+    sleep 1 while !@song.stopped?
   end
 end
 
 EightbitGo.new('sgfs/sirodango-Horcrux.sgf')
-
-# do some magic with the move hash
-# for move in sgf.move_list
-#   puts "%s: (%i, %i)" % [move[:color], move[:x], move[:y]]
-# end

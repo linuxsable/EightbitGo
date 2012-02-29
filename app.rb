@@ -2,32 +2,13 @@ require 'treetop'
 require 'kantan-sgf'
 require 'bloops'
 require 'feepogram'
+require './lib/keys'
 
 class EightbitGo
-  BOARD_SIZE_X = 19
-  BOARD_SIZE_Y = 19
+  # Available octaves in bloops
+  OCTAVES = [1, 2, 3, 4, 5, 6, 7, 8]
 
-  X_NOTE_MAP = {
-    0 => 'C',
-    1 => 'D',
-    2 => 'E',
-    3 => 'F',
-    4 => 'G',
-    5 => 'A',
-    6 => 'B',
-    7 => 'C',
-    8 => 'D',
-    9 => 'E',
-    10 => 'F',
-    11 => 'G',
-    12 => 'A',
-    13 => 'B',
-    14 => 'C',
-    15 => 'D',
-    16 => 'E',
-    17 => 'F',
-    18 => 'G'
-  }
+  BOARD_SIZE = { X: 19, Y: 19 }
 
   def initialize(filename)
     @filename = filename
@@ -49,19 +30,69 @@ class EightbitGo
     "Match: #{@sgf.player_black} vs. #{@sgf.player_white}."
   end
 
+  def create_note_map(key)
+    map = {
+      1 => key[0],
+      2 => key[1],
+      3 => key[2],
+      4 => key[3],
+      5 => key[4],
+      6 => key[5],
+      7 => key[6],
+      8 => key[0],
+      9 => key[1],
+      10 => key[2],
+      11 => key[3],
+      12 => key[4],
+      13 => key[5],
+      14 => key[6],
+      15 => key[0],
+      16 => key[1],
+      17 => key[2],
+      18 => key[3],
+      19 => key[4]
+    }
+  end
+
+  def create_octave_map
+    map = {
+      1 => OCTAVES[0],
+      2 => OCTAVES[0],
+      3 => OCTAVES[0],
+      4 => OCTAVES[1],
+      5 => OCTAVES[1],
+      6 => OCTAVES[2],
+      7 => OCTAVES[2],
+      8 => OCTAVES[3],
+      9 => OCTAVES[3],
+      10 => OCTAVES[4],
+      11 => OCTAVES[4],
+      12 => OCTAVES[4],
+      13 => OCTAVES[5],
+      14 => OCTAVES[5],
+      15 => OCTAVES[6],
+      16 => OCTAVES[6],
+      17 => OCTAVES[7],
+      18 => OCTAVES[7],
+      19 => OCTAVES[7]
+    }
+  end
+
   def create_note_from_move(move)
     if move.include? :pass
       return nil
     end
 
-    x = X_NOTE_MAP[move[:x]]
-    y = move[:y]
+    note_map = create_note_map(Keys::C_MAJ)
+    octave_map = create_octave_map
 
-    if y > 5
-      y = 5
-    end
+    x = note_map[move[:x]]
+    y = octave_map[move[:y]]
 
-    "8:%s%s" % [x, y]
+    types = [4, 8]
+    type = types[rand(2)]
+
+    "%s:%s%s" % [type, x, y]
   end
 
   def create_player_melodies
@@ -83,28 +114,29 @@ class EightbitGo
 
   def init_song
     @song = Bloops.new
-    @song.tempo = 230
+    @song.tempo = 240
 
     black_instrument = @song.sound Bloops::SQUARE
-    black_instrument.sustain = 0.4
-    black_instrument.decay = 0.4
+    black_instrument.decay = 0.2
+    black_instrument.sustain = 0.2
+    black_instrument.volume = 0.40
 
     white_instrument = @song.sound Bloops::SINE
-    white_instrument.sustain = 2
-    white_instrument.decay = 0.4
+    white_instrument.sustain = 0.5
+    white_instrument.decay = 0.2
+    white_instrument.attack = 0.2
 
-    p 'Black Moves:'
-    p @black_notes.join(' ')
+    puts 'Black Moves:'
+    puts @black_notes.join(' ')
 
-    p 'White Moves:'
-    p @white_notes.join(' ')
+    puts 'White Moves:'
+    puts @white_notes.join(' ')
 
-    # @song.tune(black_instrument, @black_notes.join(' '))
+    @song.tune(black_instrument, @black_notes.join(' '))
     @song.tune(white_instrument, @white_notes.join(' '))
   end
 
   def play_song
-    sleep 1
     @song.play
     sleep 1 while !@song.stopped?
   end

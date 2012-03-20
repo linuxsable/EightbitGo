@@ -21,6 +21,11 @@ class EightbitGo
     play_song
   end
 
+  def self.play_from_file!(file)
+    e = self.new(file)
+    e.play_song
+  end
+
   def parse_sgf
     @sgf = KantanSgf::Sgf.new(@filename)
     @sgf.parse
@@ -79,6 +84,8 @@ class EightbitGo
   end
 
   def create_note_from_move(move)
+    puts move if starpoint?(move)
+
     if move.include? :pass
       return nil
     end
@@ -89,10 +96,10 @@ class EightbitGo
     x = note_map[move[:x]]
     y = octave_map[move[:y]]
 
-    types = [4, 8]
-    type = types[rand(2)]
+    # quater note
+    note_type = 4
 
-    "%s:%s%s" % [type, x, y]
+    "%s:%s%s" % [note_type, x, y]
   end
 
   def create_player_melodies
@@ -109,6 +116,25 @@ class EightbitGo
           @black_notes << note
         end
       end
+    end
+  end
+
+  # Check if a move is starpoint
+  def starpoint?(move)
+    if !move.is_a? Hash
+      raise "move param must be a Hash"
+    end
+
+    if move[:x] == 3 and move[:y] == 3
+      return true
+    elsif move[:x] == 15 and move[:y] == 3
+      return true
+    elsif move[:x] == 3 and move[:y] == 15
+      return true
+    elsif move[:x] == 15 and move[:y] == 15
+      return true
+    else
+      return false
     end
   end
 
@@ -142,4 +168,4 @@ class EightbitGo
   end
 end
 
-EightbitGo.new('sgfs/sirodango-Horcrux.sgf')
+EightbitGo.play_from_file! 'sgfs/sirodango-Horcrux.sgf'
